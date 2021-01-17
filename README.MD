@@ -7,6 +7,8 @@
 
 ## Сборка проекта (на Linux)
 
+Требует установленный cargo
+
     cargo build
     
 На Ubuntu на сборки дополнительно потребовалось поставить подолнительные пакеты
@@ -19,16 +21,12 @@
 
 ## Сборка проекта (на Windows)
 
-    cargo build --target x86_64-pc-windows-gnu
+Требует установленный cargo
+
+    cargo build
   
 ---
     
 **Полезные ссылки**
 
 [rust webview bindings library](https://github.com/Boscop/web-view)
-Установить таргет и тулцейн - только при первом запуске
-
-    rustup target add x86_64-pc-windows-gnu
-    rustup toolchain install stable-x86_64-pc-windows-gnu
-    
-Запустить компиляцию

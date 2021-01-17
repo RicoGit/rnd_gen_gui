@@ -1,16 +1,31 @@
+extern crate web_view;
+
 use web_view::*;
 
 fn main() {
-    let html_content = "<html><body><h1>Hello, World!</h1></body></html>";
-
-    web_view::builder()
-        .title("My Project")
-        .content(Content::Html(html_content))
-        .size(320, 480)
-        .resizable(false)
+    let res = web_view::builder()
+        .title("Graceful Exit Example")
+        .content(Content::Html(include_str!("../gui/index.html")))
+        .size(800, 600)
+        .resizable(true)
         .debug(true)
-        .user_data(())
-        .invoke_handler(|_webview, _arg| Ok(()))
+        .user_data(0)
+        .invoke_handler(invoke_handler)
         .run()
         .unwrap();
+    println!("res: {:?}", res)
+}
+
+fn invoke_handler(wv: &mut WebView<usize>, arg: &str) -> WVResult {
+    if arg == "init" {
+        wv.eval("init()")?;
+    } else if arg == "update" {
+        *wv.user_data_mut() += 1;
+        let js = format!("setCurrentCount({})", wv.user_data());
+        wv.eval(&js)?;
+    } else if arg == "exit" {
+        println!("exiting!");
+        wv.exit();
+    }
+    Ok(())
 }
