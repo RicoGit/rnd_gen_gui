@@ -5,6 +5,7 @@ use std::str::FromStr;
 use anyhow::Result;
 
 mod rust_gen;
+mod lemer_gen;
 mod utils;
 
 
@@ -56,7 +57,14 @@ fn invoke_handler(wv: &mut WebView<usize>, arg: &str) -> WVResult {
             // вызываем функцию в Js для отрисовки UI
             wv.eval(&stats_js)?;
         } else if kind == "genLemer" {
-            todo!("not implemented")
+            // генерируем случайную величину
+            let data = lemer_gen::generate(size);
+
+            let json_stats = serde_json::to_string(&utils::stats(&data)).unwrap();
+            let stats_js = format!("fillStats({})", json_stats);
+            println!("stats_js: {:?}", stats_js);
+            // вызываем функцию в Js для отрисовки UI
+            wv.eval(&stats_js)?;
         } else {
             println!("Unknown kind {:?}", kind)
         }

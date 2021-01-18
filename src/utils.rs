@@ -1,7 +1,6 @@
 //! Модуль содержит вспомогательные функции для расчета стохастических величин
 
 pub use serde::{Serialize, Deserialize};
-use std::collections::HashMap;
 
 #[derive(Serialize, Deserialize)]
 pub struct Stats {
