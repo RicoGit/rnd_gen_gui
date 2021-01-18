@@ -47,14 +47,13 @@ fn invoke_handler(wv: &mut WebView<usize>, arg: &str) -> WVResult {
 
     if cmd == "gen" {
         if kind == "genRust" {
+            // генерируем случайную величину
             let data = rust_gen::generate(size);
-            let fill_chart_js = format!("fillCharts({:?})", &data);
-            println!("fill_chart_js: {:?}", fill_chart_js);
-            wv.eval(&fill_chart_js)?;
 
             let json_stats = serde_json::to_string(&utils::stats(&data)).unwrap();
             let stats_js = format!("fillStats({})", json_stats);
             println!("stats_js: {:?}", stats_js);
+            // вызываем функцию в Js для отрисовки UI
             wv.eval(&stats_js)?;
         } else if kind == "genLemer" {
             todo!("not implemented")

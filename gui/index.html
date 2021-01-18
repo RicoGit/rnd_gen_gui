@@ -26,14 +26,15 @@
 <body>
 
 <div class="container">
-    <div class="well">
+    <div class="well text-center">
         <div class="row">
-            <h1 class="preload">Анализ генераторов псевдослучайных числовых последовательностей</h1>
+            <h3 class="preload text-center">Анализ генераторов псевдослучайных числовых последовательностей</h3>
+            <br/>
             <div class="col-sm">
 
-                <form>
+                <form class="shadow p-3 mb-5 bg-white rounded">
                     <fieldset>
-                        <legend>Тип генератора случайных чисел</legend>
+                        <h5 class="text-center">Тип генератора случайных чисел</h5>
                         <div class="mb-3">
                             <label for="genSize" class="form-label">Размер выборки: <b id="curSize">100</b> </label>
                             <input type="range" class="form-range" id="genSize" min="100" max="10000" value="100" step="100" onchange="$('#curSize').text(this.value)" >
@@ -46,7 +47,7 @@
                             </select>
                         </div>
 
-                        <div class="btn-group" role="group">
+                        <div class="d-grid gap-2" role="group">
                             <button type="button" class="btn btn-primary" name="generateBtn" id="generateBtn">
                                 Сгенерировать
                             </button>
@@ -56,7 +57,7 @@
                     </fieldset>
                 </form>
                 <div id="stats">
-                    <table class="table">
+                    <table class="table shadow p-3 mb-5 bg-white rounded">
                         <tbody>
                         <tr>
                             <th scope="row">Размер выборки</th>
@@ -82,8 +83,10 @@
             </div>
             <div class="col-8">
                 <!-- CHART CONTAINER -->
-                <canvas id="lineChart" width="400" height="200"></canvas>
-                <canvas id="barChart" width="400" height="200"></canvas>
+                <h7>Интегральная функция распределения F(X)</h7>
+                <canvas class="shadow p-3 mb-5 bg-white rounded" id="lineChart" width="400" height="200"></canvas>
+                <h7>Дифференциальная функция распределения f(X)</h7>
+                <canvas class="shadow p-3 mb-5 bg-white rounded" id="barChart" width="400" height="200"></canvas>
             </div>
         </div>
     </div>
@@ -92,23 +95,32 @@
 
 <script>
 
-    function fillCharts(data) {
-		document.barChart.data.labels = data;
+    function fillCharts(stats) {
+		document.barChart.data.labels = Array.from(Array(100).keys());
 		document.barChart.data.datasets.forEach((dataset) => {
 			dataset.label = $('#genType option:selected').text();
-			dataset.data = data;
+			dataset.data = stats.density;
 		});
 
 		document.barChart.update();
+
+		document.lineChart.data.labels = Array.from(Array(100).keys());
+		document.lineChart.data.datasets.forEach((dataset) => {
+			dataset.label = $('#genType option:selected').text();
+			dataset.data = stats.distribution;
+		});
+
+		document.lineChart.update();
     }
 
     function fillStats(jsonStats) {
     	var stats = eval(jsonStats)
-        // $('#debug').html('<b>' +  stats.size +'</b>')
         $('#sizeCol').text(stats.size)
         $('#expectationCol').text(stats.expectation)
         $('#dispersionCol').text(stats.dispersion)
         $('#deviationCol').text(stats.deviation)
+
+		fillCharts(stats)
     }
 
 	function removeData(chart) {
@@ -140,29 +152,7 @@
 
 		})
 
-		var barChartCtx = document.getElementById('barChart').getContext('2d');
-		// https://www.chartjs.org/docs/latest/charts/bar.html#scale-configuration
-		document.barChart
-            = new Chart(barChartCtx, {
-			type: 'bar',
-			data: {
-				datasets: [{
-					label: '',
-					data: [],
-					borderWidth: 1,
-                    borderColor: 'green'
-				}]
-			},
-			options: {
-				scales: {
-					yAxes: [{
-						ticks: {
-							beginAtZero: true
-						}
-					}]
-				}
-			}
-		});
+        // https://www.chartjs.org/docs/latest/charts/line.html
 		var lineChartCtx = document.getElementById('lineChart').getContext('2d');
 		document.lineChart
 			= new Chart(lineChartCtx, {
@@ -172,7 +162,30 @@
 					label: '',
 					data: [],
 					borderWidth: 1,
-					borderColor: 'blue'
+					borderColor: 'blue',
+                    steppedLine: true,
+				}]
+			},
+			options: {
+				elements: {
+					point:{
+						radius: 0
+					}
+				}
+			}
+		});
+
+		var barChartCtx = document.getElementById('barChart').getContext('2d');
+		// https://www.chartjs.org/docs/latest/charts/bar.html#scale-configuration
+		document.barChart
+			= new Chart(barChartCtx, {
+			type: 'bar',
+			data: {
+				datasets: [{
+					label:  '',
+					data: [],
+					borderWidth: 1,
+					borderColor: 'green'
 				}]
 			},
 			options: {
