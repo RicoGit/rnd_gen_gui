@@ -3,10 +3,10 @@
 use rand::Rng;
 
 /// Генерирует массив случайных чисел в лиапазоне [1,99] указанного размера (number)
-pub fn generate(size: usize) -> Vec<u8> {
+pub fn generate(size: usize) -> Vec<u32> {
 
     let mut rng = rand::thread_rng();
-    let mut numbers = Vec::<u8>::with_capacity(size);
+    let mut numbers = Vec::<u32>::with_capacity(size);
 
     for _ in 0..size {
         numbers.push(rng.gen_range(1..100));

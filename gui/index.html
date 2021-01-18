@@ -25,7 +25,6 @@
 
 <body>
 
-
 <div class="container">
     <div class="well">
         <div class="row">
@@ -42,13 +41,13 @@
                         <div class="mb-3">
                             <label for="genType" class="form-label">Тип генератора случайных чисел</label>
                             <select id="genType" class="form-select">
-                                <option>Встроенный генератор Rust</option>
-                                <option>Генератор методом Лемера</option>
+                                <option value="genRust">Встроенный генератор Rust</option>
+                                <option value="genLemer">Генератор методом Лемера</option>
                             </select>
                         </div>
 
                         <div class="btn-group" role="group">
-                            <button type="submit" class="btn btn-primary" name="generateBtn" id="generateBtn">
+                            <button type="button" class="btn btn-primary" name="generateBtn" id="generateBtn">
                                 Сгенерировать
                             </button>
                             <button class="btn btn-warning" name="cleanBtn" id="cleanBtn">Очистить</button>
@@ -56,10 +55,35 @@
 
                     </fieldset>
                 </form>
+                <div id="stats">
+                    <table class="table">
+                        <tbody>
+                        <tr>
+                            <th scope="row">Размер выборки</th>
+                            <td id="sizeCol">#</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Мат. ожидание</th>
+                            <td id="expectationCol">#</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Дисперсия</th>
+                            <td id="dispersionCol">#</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Среднеквадратичное отклонение</th>
+                            <td id="deviationCol">#</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div id="debug">
+                </div>
             </div>
             <div class="col-8">
                 <!-- CHART CONTAINER -->
-                <canvas id="myChart" width="400" height="400"></canvas>
+                <canvas id="lineChart" width="400" height="200"></canvas>
+                <canvas id="barChart" width="400" height="200"></canvas>
             </div>
         </div>
     </div>
@@ -67,32 +91,88 @@
 
 
 <script>
+
+    function fillCharts(data) {
+		document.barChart.data.labels = data;
+		document.barChart.data.datasets.forEach((dataset) => {
+			dataset.label = $('#genType option:selected').text();
+			dataset.data = data;
+		});
+
+		document.barChart.update();
+    }
+
+    function fillStats(jsonStats) {
+    	var stats = eval(jsonStats)
+        // $('#debug').html('<b>' +  stats.size +'</b>')
+        $('#sizeCol').text(stats.size)
+        $('#expectationCol').text(stats.expectation)
+        $('#dispersionCol').text(stats.dispersion)
+        $('#deviationCol').text(stats.deviation)
+    }
+
+	function removeData(chart) {
+		chart.data.labels = [];
+		chart.data.datasets.forEach((dataset) => {
+			dataset.label = '';
+			dataset.data = [];
+		});
+		chart.update();
+	}
+
 	$(document).ready(function() {
-		var ctx = document.getElementById('myChart').getContext('2d');
-		var myChart = new Chart(ctx, {
+
+		// send to rust details for generating
+		$('#generateBtn').click(function(event) {
+            var genType = $('#genType').val()
+            var genSize = $('#genSize').val()
+			external.invoke("gen|" + genType + '|' + genSize);
+        })
+
+        // clean chart
+		$('#cleanBtn').click(function(event) {
+			removeData(document.barChart)
+			removeData(document.lineChart)
+
+			$.each($('#stats td'), function(index, item) {
+				$(item).text('#');
+			});
+
+		})
+
+		var barChartCtx = document.getElementById('barChart').getContext('2d');
+		// https://www.chartjs.org/docs/latest/charts/bar.html#scale-configuration
+		document.barChart
+            = new Chart(barChartCtx, {
 			type: 'bar',
 			data: {
-				labels: ['Red', 'Blue', 'Yellow', 'Green', 'Purple', 'Orange'],
 				datasets: [{
-					label: '# of Votes',
-					data: [12, 19, 3, 5, 2, 3],
-					backgroundColor: [
-						'rgba(255, 99, 132, 0.2)',
-						'rgba(54, 162, 235, 0.2)',
-						'rgba(255, 206, 86, 0.2)',
-						'rgba(75, 192, 192, 0.2)',
-						'rgba(153, 102, 255, 0.2)',
-						'rgba(255, 159, 64, 0.2)'
-					],
-					borderColor: [
-						'rgba(255, 99, 132, 1)',
-						'rgba(54, 162, 235, 1)',
-						'rgba(255, 206, 86, 1)',
-						'rgba(75, 192, 192, 1)',
-						'rgba(153, 102, 255, 1)',
-						'rgba(255, 159, 64, 1)'
-					],
-					borderWidth: 1
+					label: '',
+					data: [],
+					borderWidth: 1,
+                    borderColor: 'green'
+				}]
+			},
+			options: {
+				scales: {
+					yAxes: [{
+						ticks: {
+							beginAtZero: true
+						}
+					}]
+				}
+			}
+		});
+		var lineChartCtx = document.getElementById('lineChart').getContext('2d');
+		document.lineChart
+			= new Chart(lineChartCtx, {
+			type: 'line',
+			data: {
+				datasets: [{
+					label: '',
+					data: [],
+					borderWidth: 1,
+					borderColor: 'blue'
 				}]
 			},
 			options: {
@@ -106,7 +186,6 @@
 			}
 		});
 	})
-
 
 </script>
 </body>
