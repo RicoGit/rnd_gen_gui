@@ -9,3 +9,5 @@ edition = "2018"
 [dependencies]
 
 web-view = { version = "0.7" }
+anyhow = "1.0.38"
+rand = "0.8.2"
