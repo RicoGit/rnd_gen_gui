@@ -8,7 +8,7 @@ edition = "2018"
 
 [dependencies]
 
-web-view = { version = "0.7" }
+web-view = { git = "https://github.com/Boscop/web-view", branch="master", features=["edge"] }
 anyhow = "1.0.38"
 rand = "0.8.2"
 
