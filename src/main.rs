@@ -58,7 +58,7 @@ fn invoke_handler(wv: &mut WebView<usize>, arg: &str) -> WVResult {
             wv.eval(&stats_js)?;
         } else if kind == "genLemer" {
             // генерируем случайную величину
-            let data = lemer_gen::generate(size);
+            let data = lemer_gen::generate_arr_int(size, 100);
 
             let json_stats = serde_json::to_string(&utils::stats(&data)).unwrap();
             let stats_js = format!("fillStats({})", json_stats);

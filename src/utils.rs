@@ -57,7 +57,7 @@ fn distribution_density(vec: &[u32]) -> [f32; 100] {
     let mut result = [0.0; 100];
     // при встрече числа обновляем его вероятность на 1/100 и записываем в результирующий массив
     for num in vec {
-        result[*num as usize] += 0.01;
+        result[*num as usize] += 1.0 / vec.len() as f32;
     }
 
     result
@@ -70,7 +70,6 @@ fn distribution(density: &[f32]) -> [f32; 100] {
     for (idx, prob) in density.iter().enumerate() {
         // сумма вероятности растет для каждого элемета
         sum += prob;
-        result[idx] = sum;
         result[idx] = sum;
     }
 
