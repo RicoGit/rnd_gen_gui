@@ -55,30 +55,53 @@
                         </div>
 
                     </fieldset>
+                    <br>
+                    <div id="stats">
+                        <table class="table shadow p-3 mb-5 bg-white rounded">
+                            <tbody>
+                            <tr>
+                                <th scope="row">Размер выборки</th>
+                                <td id="sizeCol">#</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Мат. ожидание</th>
+                                <td id="expectationCol">#</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Дисперсия</th>
+                                <td id="dispersionCol">#</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Среднеквадратичное отклонение</th>
+                                <td id="deviationCol">#</td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </form>
-                <div id="stats">
-                    <table class="table shadow p-3 mb-5 bg-white rounded">
+
+                <div id="piContainer" class="shadow p-3 mb-5 bg-white rounded">
+                    <h3 class="preload text-center">Расчет  π</h3>
+
+                    <div class="mb-3">
+                        <label for="genSizePi" class="form-label">Размер выборки для расчета π: <b id="curSizePi">1000</b> </label>
+                        <input type="range" class="form-range" id="genSizePi" min="1000" max="100000" value="1000" step="1000" onchange="$('#curSizePi').text(this.value)" >
+                    </div>
+                    <table class="table">
                         <tbody>
                         <tr>
-                            <th scope="row">Размер выборки</th>
-                            <td id="sizeCol">#</td>
+                            <th scope="row">Расчитанное число π</th>
+                            <td id="pi">#</td>
                         </tr>
                         <tr>
-                            <th scope="row">Мат. ожидание</th>
-                            <td id="expectationCol">#</td>
-                        </tr>
-                        <tr>
-                            <th scope="row">Дисперсия</th>
-                            <td id="dispersionCol">#</td>
-                        </tr>
-                        <tr>
-                            <th scope="row">Среднеквадратичное отклонение</th>
-                            <td id="deviationCol">#</td>
+                            <th scope="row">Точность %</th>
+                            <td id="piError">#</td>
                         </tr>
                         </tbody>
                     </table>
-                </div>
-                <div id="debug">
+                    <button type="button" class="btn btn-primary" name="generatePi" id="generatePi">
+                        Сгенерировать π
+                    </button>
                 </div>
             </div>
             <div class="col-8">
@@ -107,12 +130,18 @@
 		"#d63031","#feca57","#5f27cd","#54a0ff","#01a3a4"
 	]
 
-    function pick_color() {
+    function pickColor() {
 		return colorScheme[Math.floor(Math.random() * colorScheme.length)]
     }
 
+    function fillPi(data) {
+        $('#pi').text(data)
+		let precise = Math.abs(100 - 3.1415926535897932384 / parseFloat(data) * 100);
+		$('#piError').text(100 - precise)
+	}
+
     function fillCharts(stats) {
-		let color = pick_color()
+		let color = pickColor()
 		let label = $('#genType option:selected').text()
 		let keys = Array.from(Array(100).keys());
 
@@ -178,7 +207,14 @@
 
 		})
 
-        // https://www.chartjs.org/docs/latest/charts/line.html
+		// send to rust details for generating
+		$('#generatePi').click(function(event) {
+			var genSizePi = $('#genSizePi').val()
+			external.invoke("gen|pi|" + genSizePi);
+		})
+
+
+		// https://www.chartjs.org/docs/latest/charts/line.html
 		var lineChartCtx = document.getElementById('lineChart').getContext('2d');
 		document.lineChart
 			= new Chart(lineChartCtx, {

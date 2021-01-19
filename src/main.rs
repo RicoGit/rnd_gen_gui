@@ -65,8 +65,19 @@ fn invoke_handler(wv: &mut WebView<usize>, arg: &str) -> WVResult {
             println!("stats_js: {:?}", stats_js);
             // вызываем функцию в Js для отрисовки UI
             wv.eval(&stats_js)?;
+        } else if kind == "pi" {
+            // генерируем случайную величину
+            let x_coords = lemer_gen::generate_arr(size);
+            let y_coords = lemer_gen::generate_arr(size);
+
+            let prob = utils::get_probability(&x_coords, &y_coords);
+            let pi_js = format!("fillPi({})", 4. * prob);
+
+            println!("pi_js: {:?}", pi_js);
+            wv.eval(&pi_js)?;
         } else {
             println!("Unknown kind {:?}", kind)
+
         }
     }
 

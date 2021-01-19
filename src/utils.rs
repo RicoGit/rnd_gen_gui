@@ -75,3 +75,21 @@ fn distribution(density: &[f32]) -> [f32; 100] {
 
     result
 }
+
+/// Проверяем принадледит ли точка сектору
+pub fn check((x, y): (f32, f32)) -> bool {
+    let segment = (x * x + y * y).sqrt();
+    segment <= 1.
+}
+
+/// Расчитываем какова вероятность попадания случайной величины в сектор
+pub fn get_probability(x: &[f32], y: &[f32]) -> f32 {
+    // Создаем из 2х массивов массив точек с координатами (x, y)
+    let points = x.into_iter().zip(y.into_iter());
+    // находим только точки лежащие в секторе
+    let count = points
+        .filter(|(x, y)| check((**x, **y))).count();
+
+    // считаем вероятность
+    count as f32 / x.len() as f32
+}
