@@ -1,6 +1,6 @@
 //! Модуль содержит вспомогательные функции для расчета стохастических величин
 
-pub use serde::{Serialize, Deserialize};
+pub use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize)]
 pub struct Stats {
@@ -16,7 +16,6 @@ pub struct Stats {
     density: Vec<f32>,
     /// Интегральаня функция распределения
     distribution: Vec<f32>,
-
 }
 
 /// Расчитывает стохастические величины: мат. ожидание, дисперсию и тп
@@ -30,7 +29,7 @@ pub fn stats(vec: &[u32]) -> Stats {
         dispersion,
         deviation: deviation(dispersion),
         density: Vec::from(density.clone()),
-        distribution: Vec::from(distribution(&density))
+        distribution: Vec::from(distribution(&density)),
     }
 }
 
@@ -41,10 +40,12 @@ pub fn expectation(vec: &[u32]) -> f32 {
 
 /// Дисперсия случайной величины
 fn dispersion(vec: &[u32], expectation: f32) -> f32 {
-    vec.iter().map(|x| {
-        // случайная число - мат ожидание в квадрате деленное на размер выборки
-        (*x as f32 - expectation).powi(2) / vec.len() as f32
-    }).sum()
+    vec.iter()
+        .map(|x| {
+            // случайная число - мат ожидание в квадрате деленное на размер выборки
+            (*x as f32 - expectation).powi(2) / vec.len() as f32
+        })
+        .sum()
 }
 
 /// Среднеквардатичное отклонение случайной величины
@@ -87,8 +88,7 @@ pub fn get_probability(x: &[f32], y: &[f32]) -> f32 {
     // Создаем из 2х массивов массив точек с координатами (x, y)
     let points = x.into_iter().zip(y.into_iter());
     // находим только точки лежащие в секторе
-    let count = points
-        .filter(|(x, y)| check((**x, **y))).count();
+    let count = points.filter(|(x, y)| check((**x, **y))).count();
 
     // считаем вероятность
     count as f32 / x.len() as f32

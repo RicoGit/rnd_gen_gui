@@ -1,16 +1,15 @@
 extern crate web_view;
 
-use web_view::*;
-use std::str::FromStr;
 use anyhow::Result;
+use std::str::FromStr;
+use utils;
+use web_view::*;
 
-mod rust_gen;
 mod lemer_gen;
-mod utils;
-
+mod rust_gen;
 
 fn main() {
-    let res = web_view::builder()
+    let _res = web_view::builder()
         .title("Генерация псевдослучайных числовых последовательностей")
         .content(Content::Html(include_str!("../gui/index.html")))
         .size(1200, 900)
@@ -20,7 +19,6 @@ fn main() {
         .invoke_handler(invoke_handler)
         .run()
         .unwrap();
-    println!("res: {:?}", res)
 }
 
 struct GenCmd {
@@ -37,7 +35,7 @@ fn parse_cmd(arg: &str) -> Result<GenCmd> {
     Ok(GenCmd {
         cmd: vec[0].to_string(),
         kind: vec[1].to_string(),
-        size: usize::from_str(vec[2])?
+        size: usize::from_str(vec[2])?,
     })
 }
 
@@ -77,7 +75,6 @@ fn invoke_handler(wv: &mut WebView<usize>, arg: &str) -> WVResult {
             wv.eval(&pi_js)?;
         } else {
             println!("Unknown kind {:?}", kind)
-
         }
     }
 

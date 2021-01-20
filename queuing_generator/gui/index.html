@@ -28,88 +28,57 @@
 <div class="container">
     <div class="well text-center">
         <div class="row">
-            <h3 class="preload text-center">Анализ генераторов псевдослучайных числовых последовательностей</h3>
+            <h3 class="preload text-center">Модель системы массового обслуживания</h3>
+            <div class="col-sm">тут будет анимация обслуживания</div>
+        </div>
+        <div class="row">
+
             <br/>
             <div class="col-sm">
 
                 <form class="shadow p-3 mb-5 bg-white rounded">
                     <fieldset>
-                        <h5 class="text-center">Тип генератора случайных чисел</h5>
-                        <div class="mb-3">
-                            <label for="genSize" class="form-label">Размер выборки: <b id="curSize">100</b> </label>
+                        <h5 class="text-center">Настройки</h5>
+                        <div class="mb-3 shadow p-3 mb-5 bg-white rounded">
+                            <label for="genSize" class="form-label">настройка 1</label>
                             <input type="range" class="form-range" id="genSize" min="100" max="10000" value="100" step="100" onchange="$('#curSize').text(this.value)" >
                         </div>
                         <div class="mb-3">
-                            <label for="genType" class="form-label">Тип генератора случайных чисел</label>
+                            <label for="genType" class="form-label">Настройка 2</label>
                             <select id="genType" class="form-select">
-                                <option value="genRust">Встроенный генератор Rust</option>
-                                <option value="genLemer">Генератор методом Лемера</option>
+                                <option value="genRust">опция 1</option>
+                                <option value="genLemer">опция 2</option>
                             </select>
                         </div>
 
                         <div class="d-grid gap-2" role="group">
-                            <button type="button" class="btn btn-primary" name="generateBtn" id="generateBtn">
-                                Сгенерировать
-                            </button>
-                            <button type="button" class="btn btn-warning" name="cleanBtn" name="cleanBtn" id="cleanBtn">Очистить</button>
+                            <button type="button" class="btn btn-primary" name="startBtn" id="startBtn">Пуск</button>
+                            <button type="button" class="btn btn-warning" name="stopBtn" name="stopBtn" id="stopBtn">Стоп</button>
                         </div>
 
                     </fieldset>
                     <br>
-                    <div id="stats">
-                        <table class="table shadow p-3 mb-5 bg-white rounded">
-                            <tbody>
-                            <tr>
-                                <th scope="row">Размер выборки</th>
-                                <td id="sizeCol">#</td>
-                            </tr>
-                            <tr>
-                                <th scope="row">Мат. ожидание</th>
-                                <td id="expectationCol">#</td>
-                            </tr>
-                            <tr>
-                                <th scope="row">Дисперсия</th>
-                                <td id="dispersionCol">#</td>
-                            </tr>
-                            <tr>
-                                <th scope="row">Среднеквадратичное отклонение</th>
-                                <td id="deviationCol">#</td>
-                            </tr>
-                            </tbody>
-                        </table>
-                    </div>
                 </form>
 
-                <div id="piContainer" class="shadow p-3 mb-5 bg-white rounded">
-                    <h3 class="preload text-center">Расчет  π</h3>
-
-                    <div class="mb-3">
-                        <label for="genSizePi" class="form-label">Размер выборки для расчета π: <b id="curSizePi">1000</b> </label>
-                        <input type="range" class="form-range" id="genSizePi" min="1000" max="100000" value="1000" step="1000" onchange="$('#curSizePi').text(this.value)" >
-                    </div>
-                    <table class="table">
+            </div>
+            <div class="col-8">
+                <div id="stats">
+                    <table class="table shadow p-3 mb-5 bg-white rounded">
+                        <h5 class="text-center">Статистика</h5>
                         <tbody>
                         <tr>
-                            <th scope="row">Расчитанное число π</th>
-                            <td id="pi">#</td>
+                            <th scope="row">Обслужено заявок</th>
+                            <td id="highPriorTotal">#</td>
+                            <td id="lowPriorTotal">#</td>
                         </tr>
                         <tr>
-                            <th scope="row">Точность %</th>
-                            <td id="piError">#</td>
+                            <th scope="row">Заявок в очереди</th>
+                            <td id="highPriorInQ">#</td>
+                            <td id="highPriorInQ">#</td>
                         </tr>
                         </tbody>
                     </table>
-                    <button type="button" class="btn btn-primary" name="generatePi" id="generatePi">
-                        Сгенерировать π
-                    </button>
                 </div>
-            </div>
-            <div class="col-8">
-                <!-- CHART CONTAINER -->
-                <h7>Интегральная функция распределения F(X)</h7>
-                <canvas class="shadow p-3 mb-5 bg-white rounded" id="lineChart" width="400" height="200"></canvas>
-                <h7>Дифференциальная функция распределения f(X)</h7>
-                <canvas class="shadow p-3 mb-5 bg-white rounded" id="barChart" width="400" height="200"></canvas>
             </div>
         </div>
     </div>
@@ -118,132 +87,6 @@
 
 <script>
 
-	const colorScheme = [
-		"#25CCF7","#FD7272","#54a0ff","#00d2d3",
-		"#1abc9c","#2ecc71","#3498db","#9b59b6","#34495e",
-		"#16a085","#27ae60","#2980b9","#8e44ad","#2c3e50",
-		"#f1c40f","#e67e22","#e74c3c","#95a5a6",
-		"#f39c12","#d35400","#c0392b","#bdc3c7",
-		"#55efc4","#81ecec","#74b9ff","#a29bfe","#dfe6e9",
-		"#00b894","#00cec9","#0984e3","#6c5ce7","#ffeaa7",
-		"#fab1a0","#ff7675","#fd79a8","#fdcb6e","#e17055",
-		"#d63031","#feca57","#5f27cd","#54a0ff","#01a3a4"
-	]
-
-    function pickColor() {
-		return colorScheme[Math.floor(Math.random() * colorScheme.length)]
-    }
-
-    function fillPi(data) {
-        $('#pi').text(data)
-		let precise = Math.abs(100 - 3.1415926535897932384 / parseFloat(data) * 100);
-		$('#piError').text(100 - precise)
-	}
-
-    function fillCharts(stats) {
-		let color = pickColor()
-		let label = $('#genType option:selected').text()
-		let keys = Array.from(Array(100).keys());
-
-		document.lineChart.data.labels = keys;
-		document.lineChart.data.datasets.push({
-			label: label,
-			data: stats.distribution,
-			borderWidth: 2,
-			borderColor: color,
-			color: color,
-			fill: false,
-			steppedLine: true,
-		})
-
-		document.lineChart.update();
-
-		document.barChart.data.labels = keys;
-		document.barChart.data.datasets.push({
-			label: label,
-			data: stats.density,
-			borderColor: color,
-			backgroundColor: color,
-			fill: true,
-			borderWidth: 2,
-		})
-
-		document.barChart.update();
-    }
-
-    function fillStats(jsonStats) {
-    	var stats = eval(jsonStats)
-        $('#sizeCol').text(stats.size)
-        $('#expectationCol').text(stats.expectation)
-        $('#dispersionCol').text(stats.dispersion)
-        $('#deviationCol').text(stats.deviation)
-
-		fillCharts(stats)
-    }
-
-	function removeData(chart) {
-		chart.data.labels = [];
-		chart.data.datasets = [];
-		chart.update();
-	}
-
-	$(document).ready(function() {
-
-		// send to rust details for generating
-		$('#generateBtn').click(function(event) {
-            var genType = $('#genType').val()
-            var genSize = $('#genSize').val()
-			external.invoke("gen|" + genType + '|' + genSize);
-        })
-
-        // clean chart
-		$('#cleanBtn').click(function(event) {
-			removeData(document.barChart)
-			removeData(document.lineChart)
-
-			$.each($('#stats td'), function(index, item) {
-				$(item).text('#');
-			});
-
-		})
-
-		// send to rust details for generating
-		$('#generatePi').click(function(event) {
-			var genSizePi = $('#genSizePi').val()
-			external.invoke("gen|pi|" + genSizePi);
-		})
-
-
-		// https://www.chartjs.org/docs/latest/charts/line.html
-		var lineChartCtx = document.getElementById('lineChart').getContext('2d');
-		document.lineChart
-			= new Chart(lineChartCtx, {
-			type: 'line',
-			options: {
-				elements: {
-					point:{
-						radius: 0
-					}
-				}
-			}
-		});
-
-		var barChartCtx = document.getElementById('barChart').getContext('2d');
-		// https://www.chartjs.org/docs/latest/charts/bar.html#scale-configuration
-		document.barChart
-			= new Chart(barChartCtx, {
-			type: 'bar',
-			options: {
-				scales: {
-					yAxes: [{
-						ticks: {
-							beginAtZero: true
-						}
-					}]
-				}
-			}
-		});
-	})
 
 </script>
 </body>

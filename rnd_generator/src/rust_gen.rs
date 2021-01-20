@@ -4,7 +4,6 @@ use rand::Rng;
 
 /// Генерирует массив случайных чисел в диапазоне [1,99] указанного размера (number)
 pub fn generate(size: usize) -> Vec<u32> {
-
     let mut rng = rand::thread_rng();
     let mut numbers = Vec::<u32>::with_capacity(size);
 
