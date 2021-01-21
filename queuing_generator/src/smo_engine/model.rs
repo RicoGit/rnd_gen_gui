@@ -48,7 +48,7 @@ impl Task {
         );
 
         // если это случайное время < прошедшего с последней генерации задачи - создаем новую, иначе - ничего
-        if dbg!(rand_appearance) <= elapsed {
+        if rand_appearance <= elapsed {
             Some(Task::new(now, options))
         } else {
             None
@@ -90,7 +90,6 @@ pub struct State {
     pub task: Option<Task>,
 
     // Аккумуляторы
-
     /// Всего задач выполнено
     pub task_done_total: usize,
 
@@ -101,7 +100,6 @@ pub struct State {
     pub task_wait_time_total: usize,
     /// Общее время ожидания завершенных низкоприоритетных задач
     pub low_prior_task_wait_time_total: usize,
-
 }
 
 impl State {
@@ -126,20 +124,25 @@ impl State {
         let task_time_spent = self
             .task
             .as_ref()
-            .map(|t| {
-                self.now - t.incoming_time - t.require_time + self.rest_time_working as usize
-            })
+            .map(|t| self.now - t.incoming_time - t.require_time + self.rest_time_working as usize)
             .unwrap_or(0);
 
         // суммарное время ожидания всех нормальных задач в очереди
-        let total_wait_time_in_q: usize = self.queue.iter().map(|t| self.now - t.incoming_time).sum();
+        let total_wait_time_in_q: usize =
+            self.queue.iter().map(|t| self.now - t.incoming_time).sum();
         // суммарное время ожидания всех низуоприоритетных задач в очереди
-        let total_wait_time_in_low_prior_q: usize = self.low_prior_queue.iter().map(|t| self.now - t.incoming_time).sum();
+        let total_wait_time_in_low_prior_q: usize = self
+            .low_prior_queue
+            .iter()
+            .map(|t| self.now - t.incoming_time)
+            .sum();
 
         // суммарное время ожидания всех задач завершенных и в очереди
-        let total_wait_time = self.task_wait_time_total + total_wait_time_in_q + total_wait_time_in_low_prior_q;
+        let total_wait_time =
+            self.task_wait_time_total + total_wait_time_in_q + total_wait_time_in_low_prior_q;
         // суммарное время ожидания всех низуоприоритетных задач завершенных и в очереди
-        let total_wait_time_low_prior = self.low_prior_task_wait_time_total + total_wait_time_in_low_prior_q;
+        let total_wait_time_low_prior =
+            self.low_prior_task_wait_time_total + total_wait_time_in_low_prior_q;
 
         // количество всех задач законченый и в очередях
         let total_task = self.task_done_total + self.queue.len() + self.low_prior_queue.len();
@@ -159,11 +162,12 @@ impl State {
 
             avg_task_wait_time: total_wait_time as f32 / total_task as f32,
             low_prior_avg_task_wait_time: total_wait_time_low_prior as f32 / total_low_task as f32,
-            normal_prior_avg_task_wait_time: (total_wait_time - total_wait_time_low_prior) as f32 / total_norm_task as f32,
+            normal_prior_avg_task_wait_time: (total_wait_time - total_wait_time_low_prior) as f32
+                / total_norm_task as f32,
 
             avg_time_between_tasks: self.now as f32 / total_task as f32,
             avg_time_between_low_prior_tasks: self.now as f32 / total_low_task as f32,
-            avg_time_between_normal_prior_tasks: self.now as f32 / total_norm_task as f32
+            avg_time_between_normal_prior_tasks: self.now as f32 / total_norm_task as f32,
         }
     }
 }

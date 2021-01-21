@@ -1,6 +1,6 @@
 //! Реализация движока системы массивого обслуживания
 
-use crate::smo_engine::model::{Options, State, Task, Stats};
+use crate::smo_engine::model::{Options, State, Stats, Task};
 use anyhow::Result;
 
 use std::sync::{Arc, Mutex};
@@ -33,7 +33,9 @@ impl Engine {
 
             loop {
                 // ждем паузу
-                thread::sleep(Duration::from_millis(time_scale_millis));
+                if time_scale_millis > 0 {
+                    thread::sleep(Duration::from_millis(time_scale_millis));
+                }
 
                 // захватываем мьютекс, выполняем раунд эмуляции и отпускаем лок в конце цикла
                 let mut engine = engine.as_ref().lock().expect("Не смог захватить мьютекс");
@@ -62,7 +64,7 @@ impl Engine {
 
     /// Рассчитывает модель для заданного момента времени
     pub fn make_round(&mut self, now: usize) {
-        println!("Раунд: {:?}, state: {:?}", now, self.state);
+        // println!("Раунд: {:?}, state: {:?}", now, self.state);
 
         // время пройдено с последнего раунда
         let time_elapsed = now - self.state.now;

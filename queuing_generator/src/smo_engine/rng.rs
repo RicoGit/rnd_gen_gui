@@ -17,7 +17,6 @@ pub fn next(expectation: usize, dispersion: usize) -> f32 {
 /// Генерирует целое случайно число с нормальным распределением
 pub fn next_int(expectation: usize, dispersion: usize) -> usize {
     let res = next(expectation, dispersion) as usize;
-    println!("m: {}, σ:{}, res: {}", expectation, dispersion, res);
     res
 }
 

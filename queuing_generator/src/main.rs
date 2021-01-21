@@ -28,7 +28,7 @@ fn main() {
 pub enum Action {
     Start { options: Options },
     Stop,
-    Stats
+    Stats,
 }
 
 /// Parses string cmd and returns struct
@@ -71,16 +71,16 @@ fn invoke_handler(wv: &mut WebView<Option<Arc<Mutex<Engine>>>>, arg: &str) -> WV
             // получение статистики
 
             if let Some(data) = wv.user_data() {
-                let stats = data.lock().map(|engine| {
-                    engine.get_stats()
-                }).expect("Не могу получить статистику");
+                let stats = data
+                    .lock()
+                    .map(|engine| engine.get_stats())
+                    .expect("Не могу получить статистику");
 
                 let stats_js = format!("fillStats({})", serde_json::to_string(&stats).unwrap());
-                println!("stats_js: {:?}", stats_js);
+                // println!("stats_js: {:?}", stats_js);
                 // вызываем функцию в Js для отрисовки UI
                 wv.eval(&stats_js)?;
             };
-
         }
     }
 

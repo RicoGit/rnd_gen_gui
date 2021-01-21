@@ -29,14 +29,13 @@
     <div class="well">
         <div class="row">
             <h3 class="preload text-center">Модель системы массового обслуживания</h3>
-
-            <div class="progress">
-                <div id="progressBar" class="progress-bar progress-bar-striped" role="progressbar" aria-valuenow="0"
-                     aria-valuemin="0" aria-valuemax="100"></div>
+            <div class="col-sm">
+                <div class="progress">
+                    <div id="progressBar" class="progress-bar progress-bar-animated progress-bar-striped"
+                         role="progressbar" aria-valuenow="0"
+                         aria-valuemin="0" aria-valuemax="100"></div>
+                </div>
             </div>
-
-
-            <div class="col-sm">тут будет анимация обслуживания</div>
         </div>
         <div class="row">
 
@@ -51,7 +50,7 @@
                             <div class="mb-3">
                                 <label for="time_scale_millis" class="form-label">Длительность единицы модельного
                                     времени, мс</label>
-                                <input type="number" class="form-number form-control" id="time_scale_millis" min="1"
+                                <input type="number" class="form-number form-control" id="time_scale_millis" min="10"
                                        max="10_000" value="500" step="100">
                             </div>
 
@@ -133,7 +132,7 @@
 
                         <tr>
                             <th scope="row">Текущее время</th>
-                            <td id="now">#</td>
+                            <td><span id="now">#</span> (<span id="realTime">#</span> мс)</td>
                         </tr>
                         </tbody>
                     </table>
@@ -187,10 +186,12 @@
 
 <script>
 
-    let updater
+	let updater
+    let startTime
 
 	function start() {
-    	let timeScale = parseInt($('#time_scale_millis').val());
+		let timeScale = parseInt($('#time_scale_millis').val());
+		startTime = new Date();
 
 		let cmd = {
 			type: 'Start',
@@ -211,9 +212,14 @@
 
 		external.invoke(JSON.stringify(cmd));
 
-		updater = setInterval(function () {
-			external.invoke(JSON.stringify({ type: 'Stats'}));
-		}, timeScale)
+		updater = setInterval(function() {
+			external.invoke(JSON.stringify({type: 'Stats'}));
+		}, timeScale < 101 ? 200 : timeScale)
+
+		$('#progressBar')
+			.attr('aria-valuenow', 0)
+			.css('width', '0%')
+			.addClass('progress-bar-striped');
 	}
 
 	function stop() {
@@ -223,23 +229,38 @@
 		external.invoke(JSON.stringify(cmd));
 
 		clearInterval(updater);
+		$('#progressBar').removeClass('progress-bar-striped')
 	}
 
 	function fillStats(dataJson) {
 		let data = eval(dataJson);
+
+		let progress = data.now / $('#max_number_of_rounds').val() * 100;
+		$('#progressBar')
+			.attr('aria-valuenow', progress)
+			.css('width', progress + '%');
+
+		if (progress >= 100) {
+			stop()
+			return
+        }
+
 		$('#now').text(data.now);
+		let timeElapsed = data.now * parseInt($('#time_scale_millis').val());
+		$('#realTime').text(timeElapsed === 0 ? new Date() - startTime :  timeElapsed)
+
 		if (data.task === null) {
 			$('#task_priority').text('#');
 			$('#task_incoming_time').text('#');
 			$('#task_time_spent').text('#');
 			$('#task_require_time').text('#');
 			$('#rest_time_working').text('');
-        } else {
+		} else {
 			$('#task_priority').text(data.task.low_priority ? 'Низкий' : 'Обычный');
 			$('#task_incoming_time').text(data.task.incoming_time);
 			$('#task_time_spent').text(data.task_time_spent);
 			$('#task_require_time').text(data.task.require_time);
-			$('#rest_time_working').text(' (' + data.rest_time_working+ ')');
+			$('#rest_time_working').text(' (' + data.rest_time_working + ')');
 		}
 
 		$('#normal_prior_task_done_total').text(data.task_done_total - data.low_prior_task_done_total);
@@ -258,10 +279,9 @@
 		$('#avg_time_between_low_prior_tasks').text(data.avg_time_between_low_prior_tasks.toFixed(2));
 		$('#avg_time_between_tasks').text(data.avg_time_between_tasks.toFixed(2));
 
-    }
+	}
 
 	function started(state) {
-		$('#progressBar').addClass("w-25")
 	}
 
 	$(document).ready(function() {
