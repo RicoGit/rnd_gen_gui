@@ -1,6 +1,6 @@
 //! Реализация движока системы массивого обслуживания
 
-use crate::smo_engine::model::{Options, State, Task};
+use crate::smo_engine::model::{Options, State, Task, Stats};
 use anyhow::Result;
 
 use std::sync::{Arc, Mutex};
@@ -47,6 +47,7 @@ impl Engine {
                 engine.make_round(now)
             }
         });
+
         Ok(())
     }
 
@@ -61,7 +62,7 @@ impl Engine {
 
     /// Рассчитывает модель для заданного момента времени
     pub fn make_round(&mut self, now: usize) {
-        println!("Раунд: {:?}", now);
+        println!("Раунд: {:?}, state: {:?}", now, self.state);
 
         // время пройдено с последнего раунда
         let time_elapsed = now - self.state.now;
@@ -74,18 +75,21 @@ impl Engine {
 
         let rest_work = self.state.rest_time_working;
 
-        if (rest_work - time_elapsed) <= 0 {
-            // запущенных задач нет, запускаем новую
+        if rest_work == 0 {
+            // запущенных задач нет, запускаем новую если есть
+            self.state.task = None;
             self.try_start_task();
         } else {
-            // задча пока работает, обновляем остаток времени
-            self.state.rest_time_working = rest_work - time_elapsed;
+            // задача пока работает, обновляем остаток времени
+            self.state.rest_time_working = rest_work - time_elapsed as u32;
         }
     }
 
     /// Складываем задачу в очередь
     pub fn put_task(&mut self, task: Option<Task>) {
         task.map(|task| {
+            println!("push task to queue {:?}", task);
+
             if task.low_priority {
                 self.state.low_prior_queue.push(task) // LIFO
             } else {
@@ -110,26 +114,27 @@ impl Engine {
 
     /// Обновляем внутренне состояние системы
     fn update_state(&mut self, task: Task) {
-        self.state.rest_time_working = task.require_time;
+        self.state.rest_time_working = task.require_time as u32;
+
+        let wait_time = self.state.now - task.incoming_time;
         self.state.task_done_total += 1;
-        self.state.time_between_tasks_total += task.require_time;
+        self.state.task_wait_time_total += wait_time;
+
         if task.low_priority {
             self.state.low_prior_task_done_total += 1;
+            self.state.low_prior_task_wait_time_total += wait_time;
         }
+
+        self.state.task.replace(task);
     }
 
     /// Вернет true если время эмуляции вышло
     fn time_is_over(&self) -> bool {
         self.state.now > self.options.max_number_of_rounds
     }
-}
 
-/// Запуск эмуляци
-pub fn start() -> Result<()> {
-    todo!()
-}
-
-/// Остановка эмуляции
-pub fn stop() -> Result<()> {
-    todo!()
+    /// Считает статистику для текущего состояния системы, эта статистика отправляеться в полльзовательский интерфейс
+    pub fn get_stats(&self) -> Stats {
+        self.state.get_stats()
+    }
 }

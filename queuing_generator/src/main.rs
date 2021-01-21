@@ -28,6 +28,7 @@ fn main() {
 pub enum Action {
     Start { options: Options },
     Stop,
+    Stats
 }
 
 /// Parses string cmd and returns struct
@@ -37,8 +38,6 @@ fn parse_cmd(arg: &str) -> Result<Action> {
 }
 
 fn invoke_handler(wv: &mut WebView<Option<Arc<Mutex<Engine>>>>, arg: &str) -> WVResult {
-    println!("Handled {:?}", arg);
-
     let action = parse_cmd(arg).expect("Cmd should be defined");
 
     match action {
@@ -53,7 +52,7 @@ fn invoke_handler(wv: &mut WebView<Option<Arc<Mutex<Engine>>>>, arg: &str) -> WV
             wv.user_data_mut().replace(engine);
 
             let start_js = format!("started(true)");
-            println!("stats_js: {:?}", start_js);
+            println!("start_js: {:?}", start_js);
 
             // вызываем функцию в Js для отрисовки UI
             wv.eval(&start_js)?;
@@ -67,6 +66,21 @@ fn invoke_handler(wv: &mut WebView<Option<Arc<Mutex<Engine>>>>, arg: &str) -> WV
             println!("stop_js: {:?}", stop_js);
             // вызываем функцию в Js для отрисовки UI
             wv.eval(&stop_js)?;
+        }
+        Action::Stats => {
+            // получение статистики
+
+            if let Some(data) = wv.user_data() {
+                let stats = data.lock().map(|engine| {
+                    engine.get_stats()
+                }).expect("Не могу получить статистику");
+
+                let stats_js = format!("fillStats({})", serde_json::to_string(&stats).unwrap());
+                println!("stats_js: {:?}", stats_js);
+                // вызываем функцию в Js для отрисовки UI
+                wv.eval(&stats_js)?;
+            };
+
         }
     }
 

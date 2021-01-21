@@ -26,7 +26,7 @@
 <body>
 
 <div class="container">
-    <div class="well text-center">
+    <div class="well">
         <div class="row">
             <h3 class="preload text-center">Модель системы массового обслуживания</h3>
 
@@ -41,8 +41,7 @@
         <div class="row">
 
             <br/>
-            <div class="col-sm">
-
+            <div class="col-sm  text-center">
                 <form class="shadow p-3 mb-5 bg-white rounded">
                     <fieldset>
 
@@ -53,7 +52,7 @@
                                 <label for="time_scale_millis" class="form-label">Длительность единицы модельного
                                     времени, мс</label>
                                 <input type="number" class="form-number form-control" id="time_scale_millis" min="1"
-                                       max="10_000" value="100" step="100">
+                                       max="10_000" value="500" step="100">
                             </div>
 
                             <div class="mb-3">
@@ -70,25 +69,26 @@
                             <div class="input-group mb-3">
                                 <span class="input-group-text">m</span>
                                 <input type="number" id="appearance_expectation" class="form-control"
-                                       placeholder="Мат. ожидание" aria-label="m" min="1" max="1000" value="10">
+                                       placeholder="Мат. ожидание" aria-label="m" min="1" max="1000" value="2">
                                 <span class="input-group-text">σ</span>
                                 <input type="number" id="appearance_dispersion" class="form-control"
-                                       placeholder="Дисперсия" aria-label="σ" min="1" max="1000" value="10">
+                                       placeholder="Дисперсия" aria-label="σ" min="1" max="1000" value="1">
                             </div>
                             <h7>Время обработки задачи</h7>
                             <div class="input-group mb-3">
                                 <span class="input-group-text">m</span>
                                 <input type="number" id="task_weight_time_expectation" class="form-control"
-                                       placeholder="Мат. ожидание" aria-label="m" min="1" max="1000" value="10">
+                                       placeholder="Мат. ожидание" aria-label="m" min="1" max="1000" value="5">
                                 <span class="input-group-text">σ</span>
                                 <input type="number" id="task_weight_time_dispersion" class="form-control"
-                                       placeholder="Дисперсия" aria-label="σ" min="1" max="1000" value="10">
+                                       placeholder="Дисперсия" aria-label="σ" min="1" max="1000" value="3">
                             </div>
 
                             <div class="mb-3">
-                                <label for="low_priority_probability" class="form-label">Вероятность задачи с низким приоритетом</label>
+                                <label for="low_priority_probability" class="form-label">Вероятность задачи с низким
+                                    приоритетом</label>
                                 <input type="number" id="low_priority_probability" class="form-control"
-                                        min="0" max="1" value="0.1" step="0.1">
+                                       min="0" max="1" value="0.8" step="0.1">
                             </div>
                         </div>
 
@@ -100,22 +100,81 @@
                     </fieldset>
                     <br>
                 </form>
-
             </div>
-            <div class="col-8">
+            <div class="col-8 shadow p-3 mb-5 bg-white rounded">
                 <div id="stats">
-                    <table class="table shadow p-3 mb-5 bg-white rounded">
-                        <h5 class="text-center">Статистика</h5>
+                    <h4 class="text-center">Текущая заявка</h4>
+
+                    <table class="table table-striped">
                         <tbody>
                         <tr>
-                            <th scope="row">Обслужено заявок</th>
-                            <td id="highPriorTotal">#</td>
-                            <td id="lowPriorTotal">#</td>
+                            <th scope="row">Приоритет</th>
+                            <td id="task_priority">#</td>
                         </tr>
                         <tr>
-                            <th scope="row">Заявок в очереди</th>
-                            <td id="highPriorInQ">#</td>
-                            <td id="lowPriorInQ">#</td>
+                            <th scope="row">Время прибытия</th>
+                            <td id="task_incoming_time">#</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Время ожидания</th>
+                            <td id="task_time_spent">#</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Время обработки</th>
+                            <td><span id="task_require_time">#</span><span id="rest_time_working"></span></td>
+                        </tr>
+                        </tbody>
+                    </table>
+
+                    <h4 class="text-center">Система</h4>
+
+                    <table class="table table-striped">
+                        <tbody>
+
+                        <tr>
+                            <th scope="row">Текущее время</th>
+                            <td id="now">#</td>
+                        </tr>
+                        </tbody>
+                    </table>
+
+                    <table class="table table-striped">
+                        <tbody>
+
+                        <thead>
+                        <tr>
+                            <th scope="col">#</th>
+                            <th scope="col">Обычный приоритет</th>
+                            <th scope="col">Низкий приоритет</th>
+                            <th scope="col">Всего</th>
+                        </tr>
+                        </thead>
+
+                        <tr>
+                            <th scope="row">Задач выполнено</th>
+                            <td id="normal_prior_task_done_total">#</td>
+                            <td id="low_prior_task_done_total">#</td>
+                            <td id="task_done_total">#</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Задач в очереди</th>
+                            <td id="normal_prior_task_in_q_total">#</td>
+                            <td id="low_prior_task_in_q_total">#</td>
+                            <td id="task_in_q_total">#</td>
+                        </tr>
+
+                        <tr>
+                            <th scope="row">Среднее время ожидания в очереди</th>
+                            <td id="normal_prior_avg_task_wait_time">#</td>
+                            <td id="low_prior_avg_task_wait_time">#</td>
+                            <td id="avg_task_wait_time">#</td>
+                        </tr>
+
+                        <tr>
+                            <th scope="row">Среднее время между появлениями задач</th>
+                            <td id="avg_time_between_normal_prior_tasks">#</td>
+                            <td id="avg_time_between_low_prior_tasks">#</td>
+                            <td id="avg_time_between_tasks">#</td>
                         </tr>
                         </tbody>
                     </table>
@@ -128,7 +187,10 @@
 
 <script>
 
+    let updater
+
 	function start() {
+    	let timeScale = parseInt($('#time_scale_millis').val());
 
 		let cmd = {
 			type: 'Start',
@@ -142,12 +204,16 @@
 					dispersion_time: parseInt($('#task_weight_time_dispersion').val())
 				},
 				low_priority_probability: parseFloat($('#low_priority_probability').val()),
-				time_scale_millis: parseInt($('#time_scale_millis').val()),
+				time_scale_millis: timeScale,
 				max_number_of_rounds: parseInt($('#max_number_of_rounds').val()),
 			}
 		}
 
 		external.invoke(JSON.stringify(cmd));
+
+		updater = setInterval(function () {
+			external.invoke(JSON.stringify({ type: 'Stats'}));
+		}, timeScale)
 	}
 
 	function stop() {
@@ -155,7 +221,44 @@
 			type: 'Stop',
 		}
 		external.invoke(JSON.stringify(cmd));
+
+		clearInterval(updater);
 	}
+
+	function fillStats(dataJson) {
+		let data = eval(dataJson);
+		$('#now').text(data.now);
+		if (data.task === null) {
+			$('#task_priority').text('#');
+			$('#task_incoming_time').text('#');
+			$('#task_time_spent').text('#');
+			$('#task_require_time').text('#');
+			$('#rest_time_working').text('');
+        } else {
+			$('#task_priority').text(data.task.low_priority ? 'Низкий' : 'Обычный');
+			$('#task_incoming_time').text(data.task.incoming_time);
+			$('#task_time_spent').text(data.task_time_spent);
+			$('#task_require_time').text(data.task.require_time);
+			$('#rest_time_working').text(' (' + data.rest_time_working+ ')');
+		}
+
+		$('#normal_prior_task_done_total').text(data.task_done_total - data.low_prior_task_done_total);
+		$('#low_prior_task_done_total').text(data.low_prior_task_done_total);
+		$('#task_done_total').text(data.task_done_total);
+
+		$('#normal_prior_task_in_q_total').text(data.task_in_q_total - data.low_prior_task_in_q_total);
+		$('#low_prior_task_in_q_total').text(data.low_prior_task_in_q_total);
+		$('#task_in_q_total').text(data.task_in_q_total);
+
+		$('#normal_prior_avg_task_wait_time').text(data.normal_prior_avg_task_wait_time.toFixed(2));
+		$('#low_prior_avg_task_wait_time').text(data.low_prior_avg_task_wait_time.toFixed(2));
+		$('#avg_task_wait_time').text(data.avg_task_wait_time.toFixed(2));
+
+		$('#avg_time_between_normal_prior_tasks').text(data.avg_time_between_normal_prior_tasks.toFixed(2));
+		$('#avg_time_between_low_prior_tasks').text(data.avg_time_between_low_prior_tasks.toFixed(2));
+		$('#avg_time_between_tasks').text(data.avg_time_between_tasks.toFixed(2));
+
+    }
 
 	function started(state) {
 		$('#progressBar').addClass("w-25")
