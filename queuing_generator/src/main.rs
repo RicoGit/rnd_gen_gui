@@ -4,57 +4,72 @@ use anyhow::Result;
 pub use serde::{Deserialize, Serialize};
 
 use web_view::*;
+use crate::smo_engine::model::Options;
+use crate::smo_engine::engine::Engine;
+use std::sync::{Arc, Mutex};
+
+mod smo_engine;
 
 fn main() {
-    let _res = web_view::builder()
+    let _ = web_view::builder()
         .title("Модель системы массового обслуживания")
         .content(Content::Html(include_str!("../gui/index.html")))
         .size(1200, 900)
         .resizable(true)
         .debug(false)
-        .user_data(0)
+        .user_data(Option::None)
         .invoke_handler(invoke_handler)
         .run()
         .unwrap();
 }
 
-#[derive(Serialize, Deserialize)]
-struct GenCmd {
-    cmd: String,
-    kind: String,
-    size: usize,
+
+#[derive(Serialize, Deserialize, Debug)]
+pub enum Action { Start, Stop }
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct Cmd {
+    cmd: Action,
+    options: Options,
 }
 
 /// Parses string cmd and returns struct
-fn parse_cmd(_arg: &str) -> Result<GenCmd> {
-    // todo parse json
-
-    // let vec = arg.split('|').collect::<Vec<_>>();
-    // assert!(vec.len() > 2, "cmd should have at least 3 fields");
-    //
-    // Ok(GenCmd {
-    //     cmd: vec[0].to_string(),
-    //     kind: vec[1].to_string(),
-    //     size: usize::from_str(vec[2])?
-    // })
-
-    todo!()
+fn parse_cmd(arg: &str) -> Result<Cmd> {
+    let cmd = serde_json::from_str(arg)?;
+    Ok(cmd)
 }
 
-fn invoke_handler(wv: &mut WebView<usize>, arg: &str) -> WVResult {
+fn invoke_handler(wv: &mut WebView<Option<Arc<Mutex<Engine>>>>, arg: &str) -> WVResult {
     println!("Handled {:?}", arg);
 
-    let GenCmd { cmd, kind, size: _ } = parse_cmd(arg).expect("Cmd should be defined");
+    let Cmd { cmd, options } = parse_cmd(arg).expect("Cmd should be defined");
 
-    // todo implement
-    if cmd == "gen" {
-        if kind == "genRust" {
-            let stats_js = format!("fillStats({})", "todo data");
-            println!("stats_js: {:?}", stats_js);
+    match cmd {
+        Action::Start => {
+            let engine = Arc::new(Mutex::new(Engine::new(options)));
+
+            // запускаем эмуляцию в отдельном треде
+            Engine::start(engine.clone());
+
+            let mut data = wv.user_data_mut();
+            // перетираем прошлый движок во внутреннем состоянии программы
+            data = &mut Some(engine);
+
+
+            let start_js = format!("started(true)");
+            println!("stats_js: {:?}", start_js);
             // вызываем функцию в Js для отрисовки UI
-            wv.eval(&stats_js)?;
-        } else {
-            println!("Unknown kind {:?}", kind)
+            wv.eval(&start_js)?;
+        }
+        Action::Stop => {
+            let mut data = wv.user_data_mut();
+            data = &mut None;
+
+
+            let stop_js = format!("started(false)");
+            println!("stop_js: {:?}", stop_js);
+            // вызываем функцию в Js для отрисовки UI
+            wv.eval(&stop_js)?;
         }
     }
 
