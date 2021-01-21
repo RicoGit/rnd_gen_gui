@@ -1,10 +1,11 @@
 //! Реализация движока системы массивого обслуживания
 
-use crate::smo_engine::model::{Options, State, Stats, Task};
+use crate::smo_engine::model::{Options, State, Task};
 use anyhow::Result;
-use std::borrow::BorrowMut;
+
 use std::sync::{Arc, Mutex};
 use std::thread;
+use std::time::Duration;
 
 /// Внутренне состояние движка эмеляуии
 #[derive(Debug)]
@@ -20,18 +21,42 @@ impl Engine {
     }
 
     /// Начинает эмуляцию в фоне
-    pub fn start(engine: Arc<Mutex<Self>>) {
-        // todo добавить проверку времени окончания
+    pub fn start(engine: Arc<Mutex<Self>>, time_scale_millis: u64) -> Result<()> {
+        println!("Start engine");
         // запускаем эмуляцию в отдельном потоке
         thread::spawn(move || {
+            engine
+                .as_ref()
+                .lock()
+                .map(|mut e| e.state.started = true)
+                .expect("Не смог захватить мьютекс");
+
             loop {
+                // ждем паузу
+                thread::sleep(Duration::from_millis(time_scale_millis));
+
                 // захватываем мьютекс, выполняем раунд эмуляции и отпускаем лок в конце цикла
-                engine.as_ref().lock().map(|mut engine| {
-                    let now = engine.state.now + 1;
-                    engine.make_round(now)
-                });
+                let mut engine = engine.as_ref().lock().expect("Не смог захватить мьютекс");
+
+                if !engine.state.started || engine.time_is_over() {
+                    println!("Останавливаем эмуляцию в фоновом процессе");
+                    break;
+                }
+
+                let now = engine.state.now + 1;
+                engine.make_round(now)
             }
         });
+        Ok(())
+    }
+
+    /// Останавливает эмуляцию в фоне
+    pub fn stop(engine: Arc<Mutex<Self>>) {
+        println!("Start engine");
+        engine
+            .lock()
+            .map(|mut e| e.state.started = false)
+            .expect("Не смог захватить мьютекс");
     }
 
     /// Рассчитывает модель для заданного момента времени
@@ -83,7 +108,7 @@ impl Engine {
             });
     }
 
-    /// Oбновляем внутренне состояние системы
+    /// Обновляем внутренне состояние системы
     fn update_state(&mut self, task: Task) {
         self.state.rest_time_working = task.require_time;
         self.state.task_done_total += 1;
@@ -91,6 +116,11 @@ impl Engine {
         if task.low_priority {
             self.state.low_prior_task_done_total += 1;
         }
+    }
+
+    /// Вернет true если время эмуляции вышло
+    fn time_is_over(&self) -> bool {
+        self.state.now > self.options.max_number_of_rounds
     }
 }
 

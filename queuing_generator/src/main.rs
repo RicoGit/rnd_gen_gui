@@ -3,10 +3,10 @@ extern crate web_view;
 use anyhow::Result;
 pub use serde::{Deserialize, Serialize};
 
-use web_view::*;
-use crate::smo_engine::model::Options;
 use crate::smo_engine::engine::Engine;
+use crate::smo_engine::model::Options;
 use std::sync::{Arc, Mutex};
+use web_view::*;
 
 mod smo_engine;
 
@@ -23,18 +23,15 @@ fn main() {
         .unwrap();
 }
 
-
 #[derive(Serialize, Deserialize, Debug)]
-pub enum Action { Start, Stop }
-
-#[derive(Serialize, Deserialize, Debug)]
-pub struct Cmd {
-    cmd: Action,
-    options: Options,
+#[serde(tag = "type")]
+pub enum Action {
+    Start { options: Options },
+    Stop,
 }
 
 /// Parses string cmd and returns struct
-fn parse_cmd(arg: &str) -> Result<Cmd> {
+fn parse_cmd(arg: &str) -> Result<Action> {
     let cmd = serde_json::from_str(arg)?;
     Ok(cmd)
 }
@@ -42,29 +39,29 @@ fn parse_cmd(arg: &str) -> Result<Cmd> {
 fn invoke_handler(wv: &mut WebView<Option<Arc<Mutex<Engine>>>>, arg: &str) -> WVResult {
     println!("Handled {:?}", arg);
 
-    let Cmd { cmd, options } = parse_cmd(arg).expect("Cmd should be defined");
+    let action = parse_cmd(arg).expect("Cmd should be defined");
 
-    match cmd {
-        Action::Start => {
+    match action {
+        Action::Start { options } => {
             let engine = Arc::new(Mutex::new(Engine::new(options)));
 
             // запускаем эмуляцию в отдельном треде
-            Engine::start(engine.clone());
+            Engine::start(engine.clone(), options.time_scale_millis)
+                .expect("Не смог начать симуляцию");
 
-            let mut data = wv.user_data_mut();
             // перетираем прошлый движок во внутреннем состоянии программы
-            data = &mut Some(engine);
-
+            wv.user_data_mut().replace(engine);
 
             let start_js = format!("started(true)");
             println!("stats_js: {:?}", start_js);
+
             // вызываем функцию в Js для отрисовки UI
             wv.eval(&start_js)?;
         }
         Action::Stop => {
-            let mut data = wv.user_data_mut();
-            data = &mut None;
-
+            // останавливаем эмуляцию
+            let data = wv.user_data().clone();
+            data.map(|arc| Engine::stop(arc));
 
             let stop_js = format!("started(false)");
             println!("stop_js: {:?}", stop_js);

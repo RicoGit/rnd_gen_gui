@@ -29,6 +29,12 @@
     <div class="well text-center">
         <div class="row">
             <h3 class="preload text-center">Модель системы массового обслуживания</h3>
+
+            <div class="progress">
+                <div id="progressBar" class="progress-bar progress-bar-striped" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+            </div>
+
+
             <div class="col-sm">тут будет анимация обслуживания</div>
         </div>
         <div class="row">
@@ -52,8 +58,8 @@
                         </div>
 
                         <div class="d-grid gap-2" role="group">
-                            <button type="button" class="btn btn-primary" name="startBtn" id="startBtn">Пуск</button>
-                            <button type="button" class="btn btn-warning" name="stopBtn" name="stopBtn" id="stopBtn">Стоп</button>
+                            <button type="button" class="btn btn-primary" onclick="start()">Пуск</button>
+                            <button type="button" class="btn btn-warning" onclick="stop()">Стоп</button>
                         </div>
 
                     </fieldset>
@@ -74,7 +80,7 @@
                         <tr>
                             <th scope="row">Заявок в очереди</th>
                             <td id="highPriorInQ">#</td>
-                            <td id="highPriorInQ">#</td>
+                            <td id="lowPriorInQ">#</td>
                         </tr>
                         </tbody>
                     </table>
@@ -86,6 +92,46 @@
 
 
 <script>
+
+    function start() {
+
+        let cmd = {
+			type: 'Start',
+            options: {
+                appearance_time: {
+                    expectation_time: 50,
+                    dispersion_time: 10
+                },
+                task_weight_time: {
+                    expectation_time: 10,
+                    dispersion_time: 3
+                },
+                low_priority_probability: 0.1,
+                time_scale_millis: 1000,
+				max_number_of_rounds: 10
+            }
+        }
+
+		external.invoke(JSON.stringify(cmd));
+	}
+
+	function stop() {
+		let cmd = {
+			type: 'Stop',
+		}
+		external.invoke(JSON.stringify(cmd));
+	}
+
+    function started(state) {
+    	$('#progressBar').addClass("w-25")
+    }
+
+	$(document).ready(function() {
+
+
+
+
+    })
 
 
 </script>

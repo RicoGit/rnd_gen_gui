@@ -21,6 +21,10 @@ pub struct Options {
     pub task_weight_time: Distribution,
     /// Вероятность получении задачей низкого приоритета [0, 1]
     pub low_priority_probability: f64,
+    /// Скольким миллисекундам равен один раунд
+    pub time_scale_millis: u64,
+    /// Количество циклов эмуляции
+    pub max_number_of_rounds: usize,
 }
 
 #[derive(Debug)]
@@ -67,6 +71,9 @@ impl Task {
 /// Внутренне состояние системы
 #[derive(Debug)]
 pub struct State {
+    /// Если true эмуляция запущена
+    pub started: bool,
+
     /// Текущий момент времени (модельного времени)
     pub now: usize,
 
@@ -93,6 +100,7 @@ impl State {
     /// Новое пустоя состояние
     pub fn new() -> Self {
         State {
+            started: false,
             now: 0,
             rest_time_working: 0,
             queue: Default::default(),
