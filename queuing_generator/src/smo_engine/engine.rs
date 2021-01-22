@@ -84,6 +84,7 @@ impl Engine {
         } else {
             // задача пока работает, обновляем остаток времени
             self.state.rest_time_working = rest_work - time_elapsed as u32;
+            self.state.load += 1;
         }
     }
 
@@ -116,7 +117,13 @@ impl Engine {
 
     /// Обновляем внутренне состояние системы
     fn update_state(&mut self, task: Task) {
+        self.state.load += 1;
+
         self.state.rest_time_working = task.require_time as u32;
+
+        if self.state.min_task_time_require > task.require_time {
+            self.state.min_task_time_require = task.require_time
+        }
 
         let wait_time = self.state.now - task.incoming_time;
         self.state.task_done_total += 1;
@@ -125,8 +132,18 @@ impl Engine {
         if task.low_priority {
             self.state.low_prior_task_done_total += 1;
             self.state.low_prior_task_wait_time_total += wait_time;
+
+            if self.state.low_prior_task_max_wait_time_total < wait_time {
+                self.state.low_prior_task_max_wait_time_total = wait_time;
+            };
+        } else {
+            if self.state.normal_prior_task_max_wait_time_total < wait_time {
+                self.state.normal_prior_task_max_wait_time_total = wait_time;
+            };
         }
 
+        self.state.task_wait_in_q_total +=
+            self.state.queue.len() + self.state.low_prior_queue.len();
         self.state.task.replace(task);
     }
 

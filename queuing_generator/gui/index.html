@@ -51,7 +51,7 @@
                                 <label for="time_scale_millis" class="form-label">Длительность единицы модельного
                                     времени, мс</label>
                                 <input type="number" class="form-number form-control" id="time_scale_millis" min="10"
-                                       max="10_000" value="500" step="100">
+                                       max="10_000" value="100" step="100">
                             </div>
 
                             <div class="mb-3">
@@ -68,7 +68,7 @@
                             <div class="input-group mb-3">
                                 <span class="input-group-text">m</span>
                                 <input type="number" id="appearance_expectation" class="form-control"
-                                       placeholder="Мат. ожидание" aria-label="m" min="1" max="1000" value="2">
+                                       placeholder="Мат. ожидание" aria-label="m" min="1" max="1000" value="3">
                                 <span class="input-group-text">σ</span>
                                 <input type="number" id="appearance_dispersion" class="form-control"
                                        placeholder="Дисперсия" aria-label="σ" min="1" max="1000" value="1">
@@ -80,7 +80,7 @@
                                        placeholder="Мат. ожидание" aria-label="m" min="1" max="1000" value="5">
                                 <span class="input-group-text">σ</span>
                                 <input type="number" id="task_weight_time_dispersion" class="form-control"
-                                       placeholder="Дисперсия" aria-label="σ" min="1" max="1000" value="3">
+                                       placeholder="Дисперсия" aria-label="σ" min="1" max="1000" value="2">
                             </div>
 
                             <div class="mb-3">
@@ -92,8 +92,9 @@
                         </div>
 
                         <div class="d-grid gap-2" role="group">
-                            <button type="button" class="btn btn-primary" onclick="start()">Пуск</button>
-                            <button type="button" class="btn btn-warning" onclick="stop()">Стоп</button>
+                            <button type="button" class="btn btn-success" onclick="start()">Пуск</button>
+                            <button type="button" class="btn btn-info" onclick="stop()">Стоп</button>
+                            <button type="button" class="btn btn-warning" onclick="clearBtn()">Очистить</button>
                         </div>
 
                     </fieldset>
@@ -108,19 +109,19 @@
                         <tbody>
                         <tr>
                             <th scope="row">Приоритет</th>
-                            <td id="task_priority">#</td>
+                            <td id="task_priority"><span>#</span></td>
                         </tr>
                         <tr>
                             <th scope="row">Время прибытия</th>
-                            <td id="task_incoming_time">#</td>
+                            <td id="task_incoming_time"><span>#</span></td>
                         </tr>
                         <tr>
                             <th scope="row">Время ожидания</th>
-                            <td id="task_time_spent">#</td>
+                            <td id="task_time_spent"><span>#</span></td>
                         </tr>
                         <tr>
                             <th scope="row">Время обработки</th>
-                            <td><span id="task_require_time">#</span><span id="rest_time_working"></span></td>
+                            <td><span id="task_require_time">#</span> (<span id="rest_time_working"></span>)</td>
                         </tr>
                         </tbody>
                     </table>
@@ -129,11 +130,23 @@
 
                     <table class="table table-striped">
                         <tbody>
-
                         <tr>
                             <th scope="row">Текущее время</th>
                             <td><span id="now">#</span> (<span id="realTime">#</span> мс)</td>
                         </tr>
+                        <tr>
+                            <th scope="row">Средняя длинна очереди</th>
+                            <td id="avg_task_in_q"><span>#</span></td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Минимальное время обслуживания задачи</th>
+                            <td id="min_task_time_require"><span>#</span></td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Нагрузка прибора</th>
+                            <td id="load"><span>#</span></td>
+                        </tr>
+
                         </tbody>
                     </table>
 
@@ -145,35 +158,42 @@
                             <th scope="col">#</th>
                             <th scope="col">Обычный приоритет</th>
                             <th scope="col">Низкий приоритет</th>
-                            <th scope="col">Всего</th>
+                            <th scope="col">Оба</th>
                         </tr>
                         </thead>
 
                         <tr>
                             <th scope="row">Задач выполнено</th>
-                            <td id="normal_prior_task_done_total">#</td>
-                            <td id="low_prior_task_done_total">#</td>
-                            <td id="task_done_total">#</td>
+                            <td id="normal_prior_task_done_total"><span>#</span></td>
+                            <td id="low_prior_task_done_total"><span>#</span></td>
+                            <td id="task_done_total"><span>#</span></td>
                         </tr>
                         <tr>
                             <th scope="row">Задач в очереди</th>
-                            <td id="normal_prior_task_in_q_total">#</td>
-                            <td id="low_prior_task_in_q_total">#</td>
-                            <td id="task_in_q_total">#</td>
+                            <td id="normal_prior_task_in_q_total"><span>#</span></td>
+                            <td id="low_prior_task_in_q_total"><span>#</span></td>
+                            <td id="task_in_q_total"><span>#</span></td>
                         </tr>
 
                         <tr>
                             <th scope="row">Среднее время ожидания в очереди</th>
-                            <td id="normal_prior_avg_task_wait_time">#</td>
-                            <td id="low_prior_avg_task_wait_time">#</td>
-                            <td id="avg_task_wait_time">#</td>
+                            <td id="normal_prior_avg_task_wait_time"><span>#</span></td>
+                            <td id="low_prior_avg_task_wait_time"><span>#</span></td>
+                            <td id="avg_task_wait_time"><span>#</span></td>
+                        </tr>
+
+                        <tr>
+                            <th scope="row">Максимальное время ожидания в очереди</th>
+                            <td id="normal_prior_task_max_wait_time_total"><span>#</span></td>
+                            <td id="low_prior_task_max_wait_time_total"><span>#</span></td>
+                            <td id="max_wait_time_total"><span>#</span></td>
                         </tr>
 
                         <tr>
                             <th scope="row">Среднее время между появлениями задач</th>
-                            <td id="avg_time_between_normal_prior_tasks">#</td>
-                            <td id="avg_time_between_low_prior_tasks">#</td>
-                            <td id="avg_time_between_tasks">#</td>
+                            <td id="avg_time_between_normal_prior_tasks"><span>#</span></td>
+                            <td id="avg_time_between_low_prior_tasks"><span>#</span></td>
+                            <td id="avg_time_between_tasks"><span>#</span></td>
                         </tr>
                         </tbody>
                     </table>
@@ -232,6 +252,12 @@
 		$('#progressBar').removeClass('progress-bar-striped')
 	}
 
+	function clearBtn() {
+		$.each($('#stats td span'), function(index, item) {
+			$(item).text('#');
+		});
+    }
+
 	function fillStats(dataJson) {
 		let data = eval(dataJson);
 
@@ -250,34 +276,42 @@
 		$('#realTime').text(timeElapsed === 0 ? new Date() - startTime :  timeElapsed)
 
 		if (data.task === null) {
-			$('#task_priority').text('#');
-			$('#task_incoming_time').text('#');
-			$('#task_time_spent').text('#');
+			$('#task_priority span').text('#');
+			$('#task_incoming_time span').text('#');
+			$('#task_time_spent span').text('#');
 			$('#task_require_time').text('#');
 			$('#rest_time_working').text('');
 		} else {
-			$('#task_priority').text(data.task.low_priority ? 'Низкий' : 'Обычный');
-			$('#task_incoming_time').text(data.task.incoming_time);
-			$('#task_time_spent').text(data.task_time_spent);
+			$('#task_priority span').text(data.task.low_priority ? 'Низкий' : 'Обычный');
+			$('#task_incoming_time span').text(data.task.incoming_time);
+			$('#task_time_spent span').text(data.task_time_spent);
 			$('#task_require_time').text(data.task.require_time);
-			$('#rest_time_working').text(' (' + data.rest_time_working + ')');
+			$('#rest_time_working').text(data.rest_time_working);
 		}
 
-		$('#normal_prior_task_done_total').text(data.task_done_total - data.low_prior_task_done_total);
-		$('#low_prior_task_done_total').text(data.low_prior_task_done_total);
-		$('#task_done_total').text(data.task_done_total);
+		$('#normal_prior_task_done_total span').text(data.task_done_total - data.low_prior_task_done_total);
+		$('#low_prior_task_done_total span').text(data.low_prior_task_done_total);
+		$('#task_done_total span').text(data.task_done_total);
 
-		$('#normal_prior_task_in_q_total').text(data.task_in_q_total - data.low_prior_task_in_q_total);
-		$('#low_prior_task_in_q_total').text(data.low_prior_task_in_q_total);
-		$('#task_in_q_total').text(data.task_in_q_total);
+		$('#normal_prior_task_in_q_total span').text(data.task_in_q_total - data.low_prior_task_in_q_total);
+		$('#low_prior_task_in_q_total span').text(data.low_prior_task_in_q_total);
+		$('#task_in_q_total span').text(data.task_in_q_total);
+		$('#avg_task_in_q span').text(data.avg_task_in_q.toFixed(2));
 
-		$('#normal_prior_avg_task_wait_time').text(data.normal_prior_avg_task_wait_time.toFixed(2));
-		$('#low_prior_avg_task_wait_time').text(data.low_prior_avg_task_wait_time.toFixed(2));
-		$('#avg_task_wait_time').text(data.avg_task_wait_time.toFixed(2));
+		$('#normal_prior_avg_task_wait_time span').text(data.normal_prior_avg_task_wait_time.toFixed(2));
+		$('#low_prior_avg_task_wait_time span').text(data.low_prior_avg_task_wait_time.toFixed(2));
+		$('#avg_task_wait_time span').text(data.avg_task_wait_time.toFixed(2));
 
-		$('#avg_time_between_normal_prior_tasks').text(data.avg_time_between_normal_prior_tasks.toFixed(2));
-		$('#avg_time_between_low_prior_tasks').text(data.avg_time_between_low_prior_tasks.toFixed(2));
-		$('#avg_time_between_tasks').text(data.avg_time_between_tasks.toFixed(2));
+		$('#max_wait_time_total span').text(Math.max(data.normal_prior_task_max_wait_time_total.toFixed(2), data.low_prior_task_max_wait_time_total.toFixed(2)));
+		$('#normal_prior_task_max_wait_time_total span').text(data.normal_prior_task_max_wait_time_total.toFixed(2));
+		$('#low_prior_task_max_wait_time_total span').text(data.low_prior_task_max_wait_time_total.toFixed(2));
+
+		$('#avg_time_between_normal_prior_tasks span').text(data.avg_time_between_normal_prior_tasks.toFixed(2));
+		$('#avg_time_between_low_prior_tasks span').text(data.avg_time_between_low_prior_tasks.toFixed(2));
+		$('#avg_time_between_tasks span').text(data.avg_time_between_tasks.toFixed(2));
+
+		$('#min_task_time_require span').text(data.min_task_time_require === -1 ? '#' :  data.min_task_time_require);
+		$('#load span').text(Math.round(data.load / data.now * 100) + '%');
 
 	}
 
